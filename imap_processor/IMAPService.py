@@ -55,11 +55,13 @@ class IMAPService:
             if b'NonJunk' in data[b'FLAGS']:
                 ham_uids.append(msg_uid)
 
-        for msg_uid, data in self.imap_client.fetch(spam_uids[:-max_results if max_results > 0 else len(spam_uids)],
+        offset = -max_results if max_results < len(spam_uids) else 0
+        for msg_uid, data in self.imap_client.fetch(spam_uids[offset:],
                                                     ['ENVELOPE', 'BODY.PEEK[TEXT]']).items():
             self.training_data.append_spam(msg_uid, data)
 
-        for msg_uid, data in self.imap_client.fetch(ham_uids[:-max_results if max_results > 0 else len(ham_uids)],
+        offset = -max_results if max_results < len(ham_uids) else 0
+        for msg_uid, data in self.imap_client.fetch(ham_uids[offset:],
                                                     ['ENVELOPE', 'BODY.PEEK[TEXT]']).items():
             self.training_data.append_ham(msg_uid, data)
 
