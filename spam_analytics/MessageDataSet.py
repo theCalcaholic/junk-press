@@ -3,9 +3,17 @@ from imapclient import response_types
 
 
 class MessageDataSet:
+    _data_sets = {}
+
     def __init__(self):
         self.data_frame = pd.DataFrame(columns=['uid', 'from', 'to', 'subject', 'body', 'class',
                                                 'class_num'])
+
+    @classmethod
+    def get_named_set(cls, key):
+        if key not in cls._data_sets:
+            cls._data_sets[key] = MessageDataSet()
+        return cls._data_sets[key]
 
     def _append(self, msg_uid, data, class_num):
         # print(data)

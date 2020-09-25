@@ -2,7 +2,7 @@ import os
 import numpy as np
 from imapclient import IMAPClient
 from imap_processor import IMAPService
-from spam_analytics import training_data_set, simple_bayes_train, simple_bayes_predict
+from spam_analytics import BayesianFilter, MessageDataSet
 
 
 def require_env_var(key):
@@ -22,20 +22,22 @@ training_data_size = 500
 server = IMAPClient(imap_url, ssl=True, use_uid=True)
 server.login(imap_login, imap_password)
 
+training_data_set = MessageDataSet.get_named_set('training')
 imap = IMAPService(server, training_data_set)
 
 # imap.listen()
 imap.load_tagged('Spam/learn/ham', max_results=training_data_size)
-print(training_data_set)
+print(MessageDataSet.get_named_set('training'))
 imap.load_tagged('Spam/learn/spam', max_results=training_data_size)
 
 server.logout()
 
 print(training_data_set)
 
-simple_bayes_train()
+message_filter = BayesianFilter()
+message_filter.train()
 
-prediction = simple_bayes_predict("""Dear notanactualuser,
+prediction = message_filter.get_spam_probability("""Dear notanactualuser,
 
 Your Steam account password has been successfully changed.
 
