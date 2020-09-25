@@ -12,6 +12,8 @@ class BayesianFilter:
         self.classifier = None
         self.is_trained = False
         self.training_data_set = MessageDataSet.get_named_set('training')
+        self.vectorizer = CountVectorizer()
+        self.classifier = MultinomialNB()
 
     def train(self):
 
@@ -20,14 +22,15 @@ class BayesianFilter:
 
         x_train, x_test, y_train, y_test = train_test_split(x, y)
 
-        vectorizer = CountVectorizer()
-        counts = vectorizer.fit_transform(x_train.values)
+        counts = self.vectorizer.fit_transform(x_train.values)
 
-        self.classifier = MultinomialNB()
         targets = y_train.values.astype('int')
         self.classifier.fit(counts, targets)
+        self.is_trained = True
 
     def get_spam_probability(self, body: str):
+        if not self.is_trained:
+            print("WARN: The filter has not been trained yet!")
         example_count = self.vectorizer.transform([body])
         predictions = self.classifier.predict_proba(example_count)
         return predictions[0]
